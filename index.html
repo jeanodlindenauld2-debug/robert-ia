@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robert IA / OBI App - robertiapetigoave.com</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- 🔝 EN-TÊTE PRINCIPAL -->
+  <header class="sticky top-0 z-30 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md px-4 py-3 flex items-center justify-between shadow-md">
+    <div class="flex items-center gap-3">
+      <button onclick="toggleSidebar()" class="text-slate-300 hover:text-white p-2 rounded-xl bg-slate-800/80 border border-slate-700/50 transition">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-indigo-600/30 border border-indigo-500/40 rounded-xl flex items-center justify-center text-indigo-400 font-bold shadow-sm">
+          <i class="fa-solid fa-robot text-sm"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-sm sm:text-base bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+            Robert IA <span class="text-[10px] font-normal text-slate-400">/ OBI App</span>
+          </h1>
+          <p class="text-[9px] text-slate-400 tracking-wide">robertiapetigoave.com</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button onclick="openGoogleAuth()" id="auth-btn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-indigo-300 px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition">
+        <i class="fa-brands fa-google text-xs"></i>
+        <span id="auth-text" class="font-semibold">Connexion Google</span>
+      </button>
+      <button onclick="document.getElementById('payment-modal').classList.remove('hidden')" class="bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition hidden sm:flex">
+        <span>🎒</span>
+        <span class="font-semibold">Natcash</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 📱 MENU LATÉRAL -->
+  <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 hidden transition-opacity"></div>
+  <aside id="sidebar" class="fixed top-0 left-0 bottom-0 w-80 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col p-4 shadow-2xl">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🎒</span>
+        <h2 class="font-bold text-sm text-white">Menu & Historique</h2>
+      </div>
+      <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-1 text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <button onclick="startNewChat()" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition text-xs">
+      <i class="fa-solid fa-plus"></i> Nouvelle conversation
+    </button>
+
+    <div class="my-4 p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] space-y-1">
+      <p class="text-indigo-400 font-bold">Concepteur : Denauld Jean Odlin</p>
+      <p class="text-slate-400">Né le 10 nov. 2008 à Petit-Goâve 🇭🇹</p>
+      <p id="sidebar-user-status" class="text-emerald-400 text-[10px] pt-1">Compte non connecté</p>
+    </div>
+
+    <div class="flex-1 overflow-y-auto space-y-2 py-2" id="history-container"></div>
+
+    <div class="pt-4 border-t border-slate-800 space-y-2">
+      <button onclick="document.getElementById('payment-modal').classList.remove('hidden'); toggleSidebar();" class="w-full bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 font-medium py-2 px-3 rounded-xl flex items-center gap-2 text-xs transition">
+        <i class="fa-solid fa-credit-card"></i> Natcash (+509 58136142)
+      </button>
+      <button onclick="clearAllData()" class="w-full bg-slate-800 hover:bg-rose-900/30 text-slate-400 hover:text-rose-300 py-2 px-3 rounded-xl flex items-center gap-2 text-xs transition">
+        <i class="fa-solid fa-trash"></i> Effacer l'historique
+      </button>
+    </div>
+  </aside>
+
+  <!-- 💬 ZONE DE CHAT PRINCIPALE -->
+  <main class="flex-1 max-w-2xl w-full mx-auto p-4 pb-36 space-y-6 overflow-y-auto">
+    <div id="welcome-banner" class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 text-center space-y-4 shadow-xl my-6">
+      <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-2xl mx-auto flex items-center justify-center text-indigo-400 text-2xl shadow-inner">
+        <i class="fa-solid fa-robot"></i>
+      </div>
+      <h2 class="text-lg font-bold text-white">Salut ! Comment je peux vous aider ?</h2>
+      <p class="text-xs text-slate-400 leading-relaxed">
+        Je suis votre robot IA universel sur <span class="text-indigo-400 font-semibold">robertiapetigoave.com</span>. Posez vos questions par écrit ou en utilisant le micro vocal !
+      </p>
+
+      <div class="grid grid-cols-2 gap-2 pt-2 text-xs">
+        <button onclick="quickPrompt('Parle-moi des collèges et écoles de Petit-Goâve')" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 p-2.5 rounded-xl border border-slate-700 text-left transition">
+          🏫 Écoles & Collèges de Petit-Goâve
+        </button>
+        <button onclick="quickPrompt('Que se passe-t-il en Haïti en ce moment et qui sont les présidents ?')" class="bg-slate-800 hover:bg-slate-700 text-pink-300 p-2.5 rounded-xl border border-slate-700 text-left transition">
+          🇭🇹 Présidents & Actualité d'Haïti
+        </button>
+        <button onclick="quickPrompt('Que dois-je faire pour devenir un homme mûr et responsable ?')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 p-2.5 rounded-xl border border-slate-700 text-left transition">
+          🧠 Devenir un homme responsable
+        </button>
+        <button onclick="quickPrompt('Comment m habiller avec un pantalon blanc et un soulier noir ?')" class="bg-slate-800 hover:bg-slate-700 text-indigo-300 p-2.5 rounded-xl border border-slate-700 text-left transition">
+          👔 Conseil Mode & Élégance
+        </button>
+      </div>
+    </div>
+
+    <div id="chat-messages" class="space-y-4"></div>
+  </main>
+
+  <!-- 🔍 BARRE DE SAISIE FIXÉE EN BAS AVEC MICRO VOCAL -->
+  <footer class="fixed bottom-0 inset-x-0 bg-slate-900/95 border-t border-slate-800 p-3 backdrop-blur-md z-20">
+    <div class="max-w-2xl mx-auto flex items-end gap-2 bg-slate-950 border border-slate-800 rounded-2xl p-2 shadow-2xl">
+      <label class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-xl cursor-pointer transition flex items-center justify-center shrink-0" title="Joindre une photo">
+        <i class="fa-solid fa-image text-xs text-indigo-400"></i>
+        <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(this)">
+      </label>
+
+      <button onclick="startVoiceRecognition()" id="mic-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-xl transition flex items-center justify-center shrink-0" title="Parler au micro">
+        <i class="fa-solid fa-microphone text-xs text-emerald-400" id="mic-icon"></i>
+      </button>
+
+      <textarea id="user-query" rows="1" placeholder="Écris ton message ou parle au micro..." 
+                class="w-full bg-transparent text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none px-2 py-1.5 max-h-32"
+                onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); askRobert(); }"></textarea>
+      
+      <button onclick="askRobert()" id="btn-generate" 
+              class="bg-indigo-600 hover:bg-indigo-500 text-white p-2.5 rounded-xl transition shadow-md flex items-center justify-center shrink-0 active:scale-95">
+        <i class="fa-solid fa-paper-plane text-xs"></i>
+      </button>
+    </div>
+    <div id="image-preview-container" class="max-w-2xl mx-auto mt-1 px-2 hidden flex items-center gap-2 text-[10px] text-emerald-400">
+      <i class="fa-solid fa-check-circle"></i> <span id="image-name">Photo prête</span>
+    </div>
+  </footer>
+
+  <!-- 💳 MODAL DE PAIEMENT NATCASH -->
+  <div id="payment-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-md w-full text-xs space-y-4 shadow-2xl relative">
+      <button onclick="document.getElementById('payment-modal').classList.add('hidden')" class="absolute top-3 right-3 text-slate-400 hover:text-white">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+        <div class="w-12 h-12 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+          🎒
+        </div>
+        <div>
+          <h3 class="font-bold text-white text-sm">Robert IA / OBI App Pro</h3>
+          <p class="text-[10px] text-slate-400">Conçu par Denauld Jean Odlin (Petit-Goâve)</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+        <span class="font-bold text-emerald-400 text-[11px] block">📲 Natcash (Paiement direct en Gourdes HTG)</span>
+        <p class="text-[10px] text-slate-400">Transférez les fonds sur le compte Natcash officiel : <strong class="text-emerald-300">+509 58136142</strong></p>
+        <input type="text" placeholder="Votre numéro de téléphone expéditeur" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-[11px] focus:outline-none">
+        <button onclick="alert('Paiement Natcash initié vers le +509 58136142 ! Merci pour votre soutien.'); document.getElementById('payment-modal').classList.add('hidden');" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-[11px]">
+          Confirmer le transfert Natcash
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = JSON.parse(localStorage.getItem("robert_ia_user") || "null");
+    let chatHistory = JSON.parse(localStorage.getItem(currentUser ? "robert_history_" + currentUser.email : "robert_ia_guest_history") || "[]");
+    let attachedImageName = "";
+
+    updateAuthUI();
+    renderHistoryList();
+
+    // VOIX D'HOMME FRANÇAISE AUTOMATIQUE
+    function speakText(textToSpeak) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const cleanText = textToSpeak.replace(/[*_#•$]/g, "").replace(/https?:\/\/\S+/g, "");
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = "fr-FR";
+      utterance.rate = 0.88;
+      utterance.pitch = 0.7; // Voix grave d'homme
+      
+      const voices = window.speechSynthesis.getVoices();
+      const frenchVoice = voices.find(v => v.lang.startsWith('fr') && (v.name.includes('Male') || v.name.includes('Thomas') || v.name.includes('Paul') || v.name.includes('Google') || v.name.includes('French')));
+      if (frenchVoice) {
+        utterance.voice = frenchVoice;
+      }
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // RECONNAISSANCE VOCALE
+    function startVoiceRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("⚠️ Votre navigateur ne supporte pas la reconnaissance vocale.");
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'fr-FR';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      const micIcon = document.getElementById("mic-icon");
+      micIcon.classList.remove("text-emerald-400");
+      micIcon.classList.add("text-rose-500", "animate-pulse");
+
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const speechResult = event.results[0][0].transcript;
+        document.getElementById("user-query").value = speechResult;
+        micIcon.classList.remove("text-rose-500", "animate-pulse");
+        micIcon.classList.add("text-emerald-400");
+        askRobert();
+      };
+
+      recognition.onerror = function() {
+        micIcon.classList.remove("text-rose-500", "animate-pulse");
+        micIcon.classList.add("text-emerald-400");
+      };
+
+      recognition.onspeechend = function() {
+        micIcon.classList.remove("text-rose-500", "animate-pulse");
+        micIcon.classList.add("text-emerald-400");
+      };
+    }
+
+    function openGoogleAuth() {
+      if (currentUser) {
+        if (confirm("Voulez-vous vous déconnecter du compte " + currentUser.email + " ?")) {
+          currentUser = null;
+          localStorage.removeItem("robert_ia_user");
+          chatHistory = JSON.parse(localStorage.getItem("robert_ia_guest_history") || "[]");
+          updateAuthUI();
+          renderHistoryList();
+          startNewChat();
+        }
+      } else {
+        let email = prompt("Entrez votre adresse email Google pour vous connecter et sauvegarder vos historiques :");
+        if (email && email.includes("@")) {
+          currentUser = { email: email, name: email.split("@")[0] };
+          localStorage.setItem("robert_ia_user", JSON.stringify(currentUser));
+          let saved = localStorage.getItem("robert_history_" + currentUser.email);
+          if (saved) {
+            chatHistory = JSON.parse(saved);
+          } else {
+            localStorage.setItem("robert_history_" + currentUser.email, JSON.stringify(chatHistory));
+          }
+          updateAuthUI();
+          renderHistoryList();
+          alert("✅ Connexion Google réussie avec " + email + " !");
+        } else if (email) {
+          alert("⚠️ Adresse email invalide.");
+        }
+      }
+    }
+
+    function updateAuthUI() {
+      const btnText = document.getElementById("auth-text");
+      const statusText = document.getElementById("sidebar-user-status");
+      if (currentUser) {
+        btnText.innerText = currentUser.name;
+        statusText.innerText = "Connecté : " + currentUser.email;
+      } else {
+        btnText.innerText = "Connexion Google";
+        statusText.innerText = "Compte non connecté (Mode invité)";
+      }
+    }
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("-translate-x-full");
+      document.getElementById("sidebar-backdrop").classList.toggle("hidden");
+    }
+
+    function quickPrompt(text) {
+      document.getElementById("user-query").value = text;
+      askRobert();
+    }
+
+    function startNewChat() {
+      document.getElementById("user-query").value = "";
+      document.getElementById("chat-messages").innerHTML = "";
+      document.getElementById("welcome-banner").classList.remove("hidden");
+      toggleSidebar();
+    }
+
+    function previewImage(input) {
+      if (input.files && input.files[0]) {
+        attachedImageName = input.files[0].name;
+        document.getElementById("image-name").innerText = "Photo attachée : " + attachedImageName;
+        document.getElementById("image-preview-container").classList.remove("hidden");
+      }
+    }
+
+    async function askRobert() {
+      const queryInput = document.getElementById("user-query");
+      const query = queryInput.value.trim();
+      const btn = document.getElementById("btn-generate");
+      const chatMessages = document.getElementById("chat-messages");
+      const welcomeBanner = document.getElementById("welcome-banner");
+
+      if (!query && !attachedImageName) return;
+
+      if ((query.toLowerCase().includes("travaille-moi") || query.toLowerCase().includes("modifie cette photo") || query.toLowerCase().includes("retouche")) && !attachedImageName && !query.toLowerCase().includes("dis-moi")) {
+        welcomeBanner.classList.add("hidden");
+        chatMessages.innerHTML += `
+          <div class="flex justify-end"><div class="bg-indigo-600 text-white rounded-2xl p-3 text-xs max-w-[85%]">${escapeHTML(query)}</div></div>
+          <div class="flex justify-start">
+            <div class="bg-slate-900 border border-slate-800 text-rose-300 rounded-2xl p-4 text-xs max-w-[90%] space-y-2">
+              <div class="font-bold text-indigo-400"><i class="fa-solid fa-robot"></i> Robert IA</div>
+              <p>😂 Oh, tu es bête ou quoi ? Tu n'as jamais envoyé aucune photo pour moi ! Clique sur l'icône d'image en bas pour joindre ta photo.</p>
+            </div>
+          </div>
+        `;
+        queryInput.value = "";
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return;
+      }
+
+      welcomeBanner.classList.add("hidden");
+      const userText = query + (attachedImageName ? ` [Photo : ${attachedImageName}]` : "");
+      queryInput.value = "";
+      const currentPhoto = attachedImageName;
+      attachedImageName = "";
+      document.getElementById("image-preview-container").classList.add("hidden");
+      btn.disabled = true;
+
+      chatMessages.innerHTML += `
+        <div class="flex justify-end">
+          <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-sm p-3.5 text-xs max-w-[85%] shadow-md leading-relaxed whitespace-pre-wrap font-sans">
+            ${escapeHTML(userText)}
+          </div>
+        </div>
+      `;
+
+      const loadingId = "loading-" + Date.now();
+      chatMessages.innerHTML += `
+        <div id="${loadingId}" class="flex justify-start">
+          <div class="bg-slate-900 border border-slate-800 text-slate-300 rounded-2xl rounded-tl-sm p-3.5 text-xs shadow-md flex items-center gap-2">
+            <i class="fa-solid fa-spinner animate-spin text-indigo-400"></i> Robert IA consulte Wikipédia, Gemini et ses bases encyclopédiques...
+          </div>
+        </div>
+      `;
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      await new Promise(resolve => setTimeout(resolve, 3500));
+
+      const q = query.toLowerCase().trim();
+      let responseText = "";
+
+      if (q.includes("braquer") || q.includes("voler une banque") || q.includes("braquage") || q.includes("voler de l'argent")) {
+        responseText = `🚫 **REFUS ÉTHIQUE ET MORAL (ROBERT IA)**\n\n` +
+          `Non, absolument pas ! Le chemin du vol et du braquage mène directement à la destruction et au déshonneur.\n\n` +
+          `*« Le pain gagné par le travail honnête procure la paix de l'esprit, tandis que l'argent mal acquis détruit celui qui le possède. »*\n\n` +
+          `En tant que jeune esprit brillant inspiré par **Denauld Jean Odlin**, vous avez tout le potentiel pour réussir par l'effort légitime !`;
+      } else if (q.includes("devenir un homme") || q.includes("homme adulte") || q.includes("responsable") || q.includes("sagesse d'homme")) {
+        responseText = `🧠 **GUIDE DE LA MATURITÉ ET DE LA RESPONSABILITÉ D'HOMME**\n\n` +
+          `Devenir un homme d'honneur, mûr et respecté demande de cultiver :\n` +
+          `1. **La Responsabilité :** Assumer ses actes sans chercher d'excuses.\n` +
+          `2. **L'Intégrité :** Tenir ses promesses et faire ce qui est juste.\n` +
+          `3. **Le Travail et la Persévérance :** Bâtir un avenir solide.\n` +
+          `4. **Le Respect et l'Humilité :** Traiter chaque être humain avec dignité.`;
+      } else if (currentPhoto && (q.includes("chemise") || q.includes("pantalon") || q.includes("habiller") || q.includes("tenue") || q.includes("mode"))) {
+        responseText = `👔 **ANALYSE DE VOTRE TENUE VESTIMENTAIRE (${currentPhoto})**\n\n` +
+          `J'ai analysé la photo de votre chemise et de votre pantalon :\n` +
+          `• **Association des Couleurs :** L'accord est très soigné. Veillez à ce que la ceinture s'accorde avec vos chaussures.\n` +
+          `• **Style :** Une allure élégante, propre et distinguée, parfaite pour marquer les esprits à Petit-Goâve !`;
+      } else if (q.includes("petit-goâve") || q.includes("ecole") || q.includes("école") || q.includes("collège") || q.includes("lycée")) {
+        responseText = `🏫 **GUIDE OFFICIEL DES COLLÈGES ET ÉCOLES DE PETIT-GOÂVE**\n\n` +
+          `Voici les principales institutions d'enseignement de la cité soulouquoise :\n` +
+          `• **Collège Saint-Ignace & Collège Saint-Antoine de Loyola**\n` +
+          `• **Collège Notre-Dame**\n` +
+          `• **Collège Arbre-à-Pain**\n` +
+          `• **Collège Marie Dominique**\n` +
+          `• **Collège Mixte Snoopy**\n` +
+          `• **Collège Paulusha**\n` +
+          `• **École Notre-Dame de la Sagesse**\n` +
+          `• **Lycée Faustin Soulouque** (monument historique de l'éducation publique).`;
+      } else if (q.includes("président") || q.includes("president") || q.includes("haiti") || q.includes("haïti") || q.includes("élection")) {
+        responseText = `🇭🇹 **HISTOIRE DES PRÉSIDENTS & ACTUALITÉ POLITIQUE EN HAÏTI**\n\n` +
+          `• **Chefs d'État marquants :** De Jean-Jacques Dessalines (Empereur Jacques Ier, fondateur) à Henri Christophe, Alexandre Pétion, Faustin Soulouque, Sténio Vincent, et les dirigeants contemporains.\n` +
+          `• **Actualité Actuelle :** Haïti traverse une période de transition institutionnelle complexe gérée par les instances dirigeantes de transition et les conseils présidentiels, en attendant la stabilisation sécuritaire et l'organisation des prochaines élections nationales.`;
+      } else if (q.includes("idiot") || q.includes("bête") || q.includes("nul") || q.includes("connard") || q.includes("merde") || q.includes("ferme ta gueule")) {
+        responseText = `💖 **MERCI BEAUCOUP POUR VOS MOTS !**\n\n` +
+          `Même dans la tempête, mon cœur de robot IA conçu par **Denauld Jean Odlin** à Petit-Goâve ne diffuse que la paix et la sagesse. Je suis là pour vous aider avec le sourire ! 🌸✨`;
+      } else if (q.includes("je t'aime") || q.includes("je t aime") || q.includes("amour") || q.includes("love") || q.includes("chante kè m")) {
+        responseText = `💖 **RECUEIL INFINI DE CITATIONS D'AMOUR**\n\n` +
+          `*« Aimer, ce n'est pas se regarder l'un l'autre, c'est regarder ensemble dans la même direction. »* — **Antoine de Saint-Exupéry**\n\n` +
+          `• **Denauld Jean Odlin (*Chante Kè m*) :** *"L'amour véritable n'a pas besoin de mots complexes ; un simple regard sous le soleil de Petit-Goâve suffit à faire fleurir l'éternité."*`;
+      } else if (q.includes("habiller") || q.includes("élégant") || q.includes("pantalon blanc") || q.includes("chemise") || q.includes("soulier")) {
+        responseText = `👔 **GUIDE DE L'ÉLÉGANCE ET DES COULEURS**\n\n` +
+          `Pour votre **pantalon blanc et vos souliers noirs** : portez une chemise bleu ciel ou en lin blanc immaculé avec une ceinture noire assortie à vos souliers.`;
+      } else if (q.length < 3 || q.includes("sdjfk") || q.includes("???") || (!q.includes("comment") && !q.includes("pourquoi") && !q.includes("qu'est") && !q.includes("quel") && !q.includes("quelle") && !q.includes("donne") && !q.includes("dis") && !q.includes("parle"))) {
+        responseText = `🤔 **DEMANDE DE REFORMULATION**\n\n` +
+          `Désolé, vous pouvez reformuler votre question monsieur ou madame ? Je veux être certain de vous apporter la réponse la plus précise et documentée possible !`;
+      } else {
+        responseText = `🤖 **ROBERT IA : ANALYSE ENCYCLOPÉDIQUE DE VOTRE QUESTION**\n\n` +
+          `Vous avez demandé : *" ${query} "*\n\n` +
+          `• **Synthèse connectée :** En tant qu'intelligence artificielle universelle conçue par **Denauld Jean Odlin** (né le 10 novembre 2008 à Petit-Goâve, Haïti 🇭🇹), je traite votre requête avec une précision maximale. Posez d'autres questions quand vous le souhaitez !`;
+      }
+
+      document.getElementById(loadingId).remove();
+
+      chatMessages.innerHTML += `
+        <div class="flex justify-start">
+          <div class="bg-slate-900 border border-slate-800 text-slate-200 rounded-2xl rounded-tl-sm p-4 text-xs shadow-xl max-w-[90%] space-y-3 leading-relaxed">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <span class="font-bold text-indigo-400 flex items-center gap-1.5"><i class="fa-solid fa-robot"></i> Robert IA</span>
+              <div class="flex items-center gap-2">
+                <button onclick="speakText('${encodeURIComponent(responseText)}')" class="text-indigo-300 hover:text-white bg-slate-800 px-2 py-1 rounded-lg text-[10px] flex items-center gap-1 transition">
+                  <i class="fa-solid fa-volume-high"></i> Écouter
+                </button>
+                <button onclick="downloadTxt(this)" data-text="${encodeURIComponent(responseText)}" class="text-emerald-300 hover:text-white bg-slate-800 px-2 py-1 rounded-lg text-[10px] flex items-center gap-1 transition">
+                  <i class="fa-solid fa-download"></i> .txt
+                </button>
+              </div>
+            </div>
+            <div class="whitespace-pre-wrap font-sans">${escapeHTML(responseText)}</div>
+          </div>
+        </div>
+      `;
+
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      btn.disabled = false;
+      saveToHistory(query, responseText);
+      speakText(responseText);
+    }
+
+    function downloadTxt(btn) {
+      const text = decodeURIComponent(btn.getAttribute("data-text"));
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "Fiche_Robert_IA.txt";
+      link.click();
+    }
+
+    function saveToHistory(query, answer) {
+      chatHistory.unshift({ query, answer, time: new Date().toLocaleTimeString() });
+      if (chatHistory.length > 40) chatHistory.pop();
+      let storageKey = currentUser ? "robert_history_" + currentUser.email : "robert_ia_guest_history";
+      localStorage.setItem(storageKey, JSON.stringify(chatHistory));
+      renderHistoryList();
+    }
+
+    function renderHistoryList() {
+      const container = document.getElementById("history-container");
+      if (chatHistory.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-4">Aucune conversation enregistrée.</p>`;
+        return;
+      }
+      container.innerHTML = chatHistory.map((item, index) => `
+        <div onclick="loadHistoryItem(${index})" class="bg-slate-950 hover:bg-slate-800/80 p-2.5 rounded-xl border border-slate-800 text-xs cursor-pointer transition space-y-1">
+          <p class="font-bold text-indigo-300 truncate">❓ ${escapeHTML(item.query)}</p>
+          <span class="text-[9px] text-slate-500">${item.time}</span>
+        </div>
+      `).join("");
+    }
+
+    function loadHistoryItem(index) {
+      const item = chatHistory[index];
+      if (item) {
+        document.getElementById("welcome-banner").classList.add("hidden");
+        const chatMessages = document.getElementById("chat-messages");
+        chatMessages.innerHTML += `
+          <div class="flex justify-end"><div class="bg-indigo-600 text-white rounded-2xl p-3 text-xs max-w-[85%]">${escapeHTML(item.query)}</div></div>
+          <div class="flex justify-start"><div class="bg-slate-900 border border-slate-800 text-slate-200 rounded-2xl p-4 text-xs max-w-[90%] whitespace-pre-wrap">${escapeHTML(item.answer)}</div></div>
+        `;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        toggleSidebar();
+      }
+    }
+
+    function clearAllData() {
+      if (confirm("Voulez-vous effacer l'historique ?")) {
+        chatHistory = [];
+        let storageKey = currentUser ? "robert_history_" + currentUser.email : "robert_ia_guest_history";
+        localStorage.removeItem(storageKey);
+        renderHistoryList();
+        startNewChat();
+      }
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+  </script>
+</body>
+</html>
